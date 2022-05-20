@@ -681,11 +681,24 @@ RCT_EXPORT_METHOD(finishWillPresentNotification: (NSString *)completionHandlerId
 RCT_EXPORT_METHOD(finishNotificationResponse: (NSString *)completionHandlerId){
     RCTNotificationResponseCallback completionHandler = self.notificationCallbacks[completionHandlerId];
     if (!completionHandler) {
-        RCTLogError(@"There is no completion handler with completionHandlerId: %@", completionHandlerId);
-        return;
+        @try {
+            RCTLogError(@"There is no completion handler with completionHandlerId: %@", completionHandlerId);
+            return;
+        }
+        @catch (NSException * e) {
+            NSLog(@"Exception completionHandler: %@", e);
+        }
+       
+    } else {
+        @try {
+            completionHandler();
+            [self.notificationCallbacks removeObjectForKey:completionHandlerId];
+        }
+        @catch (NSException * e) {
+            NSLog(@"Exception completionHandler: %@", e);
+        }
     }
-    completionHandler();
-    [self.notificationCallbacks removeObjectForKey:completionHandlerId];
+    
 }
 
 - (void)handleNotificationReceived:(NSNotification *)notification
